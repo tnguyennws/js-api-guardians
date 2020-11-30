@@ -32,7 +32,21 @@ function getArticle(_apiKey, _URI) {
 
 function renderArticle(article) {
   let _apiUrl = article.apiUrl;
-  let _artTitle = article.webTitle;
+
+  let _title = article.webTitle;
+  let _section = article.sectionName;
+  let _date = article.webPublicationDate;
+  _date = new Date(_date);
+
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  _date = _date.toLocaleDateString("fr-FR", options);
+
   /*
   TODO: 
    1. Afficher la section (sectionName: "Food")
@@ -44,11 +58,18 @@ function renderArticle(article) {
   let model = DOMmodel.cloneNode(true);
 
   let link = model.getElementsByTagName("a")[0];
-  console.log(link);
-
   link.addEventListener("click", () => {
     loadModalData(_apiUrl);
   });
+
+  let title = model.getElementsByTagName("h3")[0];
+  title.innerText = _title;
+
+  let category = model.getElementsByTagName("strong")[0];
+  category.innerText = _section;
+
+  let date = model.getElementsByClassName("date")[0];
+  date.innerText = _date;
 
   // Afficher l'article dans le DOM
   insertArticle(model);
@@ -61,17 +82,27 @@ function insertArticle(DOMElement) {
 }
 
 function loadModalData(articleUrl) {
-  console.log(articleUrl);
-
   getArticle(_apiKey, articleUrl)
     .then((response) => response.json())
     .then((response) => {
-      console.log(response);
+      let article = response.response.content;
 
       /*
         1. Afficher le titre de l'article à la place Modal title
+       */
+      let modal = document.getElementById("articleModal");
+
+      let _artTitle = article.webTitle;
+
+      let _domTitle = modal.getElementsByTagName("h5")[0];
+      _domTitle.innerText = _artTitle;
+
+      /*
         2. Ajouter un lien sur le bouton "Lire l'article" qui affiche l'article sur le site du Guardians
       */
+      let _domLink = modal.getElementsByTagName("a")[0];
+      _domLink.setAttribute("href", article.webUrl);
+      _domLink.setAttribute("target", "_blank");
     })
     .catch((error) => alert("Erreur : " + error));
 }
